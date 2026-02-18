@@ -1,0 +1,370 @@
+/* * TubeMeme 2026 | 全功能核心樣式表
+ * 包含：響應式雙位佈局、磨砂玻璃效果、霓虹發光、動畫邏輯
+ */
+
+/* --- [1] 核心變數與重置 --- */
+:root {
+    --accent: #00ff88;         /* 螢光綠 */
+    --accent-glow: rgba(0, 255, 136, 0.4);
+    --bg-dark: #08080a;        /* 極深背景 */
+    --surface: #121216;        /* 卡片背景 */
+    --surface-light: #1c1c22;
+    --side-width: 260px;       
+    --text: #f0f0f0;
+    --text-dim: #8a8a92;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --radius-lg: 20px;
+    --radius-md: 12px;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+* { 
+    margin: 0; padding: 0; box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; 
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: var(--text);
+    font-family: 'PingFang TC', 'Inter', system-ui, sans-serif;
+    line-height: 1.6;
+    overflow-x: hidden;
+    min-height: 100vh;
+}
+
+/* --- [2] 桌面側邊面板 (Desktop Side Panel) --- */
+.side-panel {
+    width: var(--side-width);
+    height: 100vh;
+    background: #0a0a0c;
+    border-right: 1px solid var(--border-color);
+    position: fixed; top: 0; left: 0; z-index: 1000;
+    display: flex; flex-direction: column;
+    transition: transform 0.3s ease;
+}
+
+.panel-header { padding: 40px 30px; text-align: center; }
+.logo img { width: 80px; filter: drop-shadow(0 0 8px var(--accent-glow)); }
+
+.side-nav { flex: 1; padding: 10px 15px; }
+.side-nav .nav-item {
+    width: 100%; padding: 14px 20px; margin-bottom: 8px;
+    background: transparent; border: none; color: var(--text-dim);
+    display: flex; align-items: center; gap: 15px;
+    cursor: pointer; border-radius: var(--radius-md); 
+    font-weight: 600; font-size: 0.95rem; transition: 0.25s;
+}
+
+.side-nav .nav-item:hover, 
+.side-nav .nav-item.active { 
+    background: rgba(0, 255, 136, 0.08); 
+    color: var(--accent); 
+}
+
+.side-nav .nav-item i { font-size: 1.3rem; }
+
+/* 桌面版帳戶資訊卡片樣式 */
+.desktop-user-panel {
+    padding: 20px;
+    border-top: 1px solid var(--border-color);
+    background: linear-gradient(to top, rgba(0, 255, 136, 0.03), transparent);
+    display: block; /* 電腦版預設顯示 */
+}
+
+/* 使用者資訊內容容器 */
+.user-info-detail {
+    background: var(--surface-light);
+    padding: 15px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: var(--shadow);
+}
+
+/* 登出按鈕 */
+.logout-btn {
+    background: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+    border: none;
+    padding: 6px 14px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.logout-btn:hover {
+    background: #ff4d4d;
+    color: white;
+}
+
+/* --- [3] 手機底部導覽列 (Mobile Nav) --- */
+.mobile-nav {
+    display: none; /* 預設隱藏 */
+    position: fixed; bottom: 0; left: 0; width: 100%;
+    height: 72px; background: rgba(10, 10, 14, 0.85);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    z-index: 2000;
+    padding-bottom: env(safe-area-inset-bottom);
+    justify-content: space-around; align-items: center;
+}
+
+.mobile-nav .nav-item {
+    flex: 1; text-decoration: none; display: flex;
+    flex-direction: column; align-items: center;
+    color: var(--text-dim); transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mobile-nav .nav-item i { font-size: 1.5rem; }
+.mobile-nav .nav-item span { font-size: 0.65rem; margin-top: 3px; font-weight: 500; }
+.mobile-nav .nav-item.active { 
+    color: var(--accent); 
+    transform: translateY(-2px);
+    text-shadow: 0 0 12px var(--accent-glow); 
+}
+
+/* --- [4] 主要內容佈局 --- */
+.main-content {
+    margin-left: var(--side-width);
+    flex: 1; padding: 0 40px 60px;
+    transition: margin 0.3s ease;
+}
+
+/* 手機版專用使用者卡片 (預設隱藏) */
+.mobile-user-panel {
+    display: none; 
+    margin-top: 20px;
+    margin-bottom: 5px;
+    width: 100%;
+}
+
+/* 頂部搜尋欄 */
+.content-header {
+    padding: 20px 0; position: sticky; top: 0; z-index: 500;
+    background: linear-gradient(to bottom, var(--bg-dark) 80%, transparent);
+}
+
+.search-bar {
+    background: var(--surface); border: 1px solid var(--border-color);
+    border-radius: 50px; padding: 12px 25px; 
+    display: flex; align-items: center; width: 100%; max-width: 500px;
+    transition: 0.3s;
+}
+
+.search-bar:focus-within { border-color: var(--accent); box-shadow: 0 0 15px rgba(0, 255, 136, 0.1); }
+.search-bar input {
+    background: transparent; border: none; color: white;
+    margin-left: 12px; width: 100%; outline: none; font-size: 0.95rem;
+}
+
+/* 分類過濾按鈕 */
+.filter-bar {
+    padding: 10px 0 30px; display: flex; gap: 12px;
+    overflow-x: auto; scrollbar-width: none;
+}
+.filter-bar::-webkit-scrollbar { display: none; }
+
+.filter-btn {
+    background: var(--surface); border: 1px solid var(--border-color);
+    color: var(--text-dim); padding: 8px 24px; border-radius: 50px;
+    cursor: pointer; transition: 0.3s; white-space: nowrap; font-weight: 500;
+}
+
+.filter-btn.active {
+    background: var(--accent); color: #000;
+    border-color: var(--accent); font-weight: 700;
+    box-shadow: 0 5px 15px var(--accent-glow);
+}
+
+/* --- [5] 迷因網格 (Grid) --- */
+.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+}
+
+.meme-card {
+    background: var(--surface); border-radius: var(--radius-lg);
+    border: 1px solid var(--border-color); overflow: hidden;
+    transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer; position: relative;
+}
+
+.meme-card video {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    background: #000;
+}
+
+.meme-card:hover {
+    transform: translateY(-10px) scale(1.02);
+    border-color: var(--accent);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+}
+
+.card-info { padding: 18px; }
+.card-info h3 { 
+    font-size: 1rem; font-weight: 600; margin-bottom: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+}
+
+.badge {
+    display: inline-block; padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.05); border-radius: 6px;
+    font-size: 0.7rem; color: var(--accent); font-weight: bold;
+}
+
+/* --- [6] 投稿 Modal (建立新檔案) --- */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(15px); display: none;
+    justify-content: center; align-items: center; z-index: 3000;
+    padding: 20px;
+}
+
+.upload-modal-card {
+    background: #141418; width: 100%; max-width: 480px;
+    padding: 35px; border-radius: 28px; border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative; animation: modalPop 0.4s ease;
+}
+
+@keyframes modalPop {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.btn-close-modal {
+    position: absolute; top: 20px; right: 20px;
+    background: rgba(255, 255, 255, 0.05); border: none;
+    color: white; width: 32px; height: 32px; border-radius: 50%;
+    cursor: pointer; font-size: 1.2rem;
+}
+
+.file-input-wrapper {
+    margin: 25px 0; border: 2px dashed #333;
+    border-radius: var(--radius-md); padding: 40px 20px;
+    text-align: center; transition: 0.3s; cursor: pointer;
+}
+
+.file-input-wrapper:hover { border-color: var(--accent); background: rgba(0, 255, 136, 0.03); }
+.file-input-wrapper i { font-size: 2.5rem; color: var(--accent); margin-bottom: 10px; display: block; }
+
+.modal-body .input-group input, 
+.modal-body .input-group select {
+    width: 100%; padding: 14px; margin-bottom: 15px;
+    background: #0a0a0c; border: 1px solid #222;
+    border-radius: 10px; color: white; outline: none;
+}
+
+.btn-primary {
+    width: 100%; padding: 16px; background: var(--accent);
+    color: #000; border: none; border-radius: 12px;
+    font-weight: 800; font-size: 1rem; cursor: pointer; transition: 0.3s;
+}
+
+.btn-primary:hover { box-shadow: 0 0 20px var(--accent-glow); transform: translateY(-2px); }
+
+/* --- [7] 系統通知 (Notifier) --- */
+.notifier-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(5px); z-index: 10000;
+    display: flex; justify-content: center; align-items: center;
+    transition: 0.3s ease;
+}
+
+.notifier-box {
+    width: 320px; background: #1a1a20; border: 1px solid var(--accent);
+    border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+    transform: scale(1); transition: 0.3s;
+}
+
+.notifier-header {
+    padding: 12px 18px; background: rgba(255,255,255,0.02);
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.header-left { display: flex; align-items: center; gap: 8px; color: var(--accent); font-weight: bold; font-size: 0.85rem; }
+.close-icon { cursor: pointer; opacity: 0.6; transition: 0.2s; font-size: 1.2rem; }
+.close-icon:hover { opacity: 1; color: #ff4d4d; }
+
+.notifier-message { padding: 25px 20px; font-size: 0.95rem; color: #eee; text-align: center; }
+
+.notifier-loader { height: 3px; background: var(--accent); width: 0%; }
+.notifier-overlay:not(.is-hidden) .notifier-loader { animation: loadProgress 4s linear forwards; }
+
+@keyframes loadProgress { from { width: 0%; } to { width: 100%; } }
+
+/* --- [8] 響應式適配 (Responsive) --- */
+
+@media (min-width: 1600px) {
+    .grid-layout { grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (max-width: 1024px) {
+    .side-panel { width: 220px; }
+    .main-content { margin-left: 220px; padding: 0 25px 40px; }
+    .grid-layout { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* 🔥 手機版核心轉換邏輯 */
+@media (max-width: 768px) {
+    /* 隱藏桌面面板 */
+    .side-panel { transform: translateX(-100%); }
+    .desktop-user-panel { display: none !important; }
+
+    /* 顯示手機組件 */
+    .mobile-nav { display: flex; }
+    .mobile-user-panel { display: block !important; } /* 顯示搜尋欄上方的面板 */
+    
+    .main-content { 
+        margin-left: 0; 
+        padding: 0 15px 100px; /* 為底部導覽留白 */
+    }
+
+    .mobile-user-panel .user-info-detail {
+        width: 100%;
+        justify-content: space-between; /* 讓頭像與按鈕在手機上左右分開 */
+    }
+
+    .content-header { padding: 10px 0; }
+    .search-bar { width: 100%; max-width: none; }
+    
+    .grid-layout { 
+        grid-template-columns: repeat(2, 1fr); 
+        gap: 12px; 
+    }
+    
+    .meme-card video { height: 220px; } /* 手機版縮小預覽高度 */
+    .meme-card { border-radius: 12px; }
+}
+
+@media (max-width: 480px) {
+    .grid-layout { grid-template-columns: 1fr; }
+}
+
+/* 狀態工具類 */
+.is-hidden { display: none !important; opacity: 0; pointer-events: none; }
+.ri-spin { animation: spin 1s linear infinite; }
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* 讓原始檔案按鈕隱藏，但仍可被 JS 觸發 */
+.input-file-video {
+    position: absolute;
+    opacity: 0;
+    width: 1;
+    height: 1;
+    pointer-events: none;
+}
+
+/* 確保 wrapper 點起來像按鈕 */
+.file-input-wrapper {
+    position: relative; /* 基準 */
+    cursor: pointer;
+    /* 其餘樣式保持你原本的... */
+}

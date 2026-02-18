@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>詳細檔案 | TubeMeme</title>
+    <link rel="description" href="TubeMeme 迷因交流平台的詳細頁面，展示迷因內容、評論區和相關資訊。">
+    <link rel="icon" href="asset/logo.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* --- 核心變數 --- */
+        :root {
+            --bg: #0a0a0c;
+            --surface: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #00ff88;
+            --accent-glow: rgba(0, 255, 136, 0.3);
+            --text: #ffffff;
+            --text-dim: #a0a0a0;
+            --glass: blur(12px);
+        }
+
+        /* --- 基礎設定 --- */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+            line-height: 1.6;
+        }
+
+        /* --- 狀態控制 (行為核心) --- */
+        .is-hidden { display: none !important; }
+        .is-loading { pointer-events: none; opacity: 0.7; }
+        
+        /* 旋轉動畫用於加載圖標 */
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .ri-spin { display: inline-block; animation: spin 1s linear infinite; }
+
+        /* --- 佈局容器 --- */
+        .detail-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 850px) {
+            .detail-container { grid-template-columns: 1fr; margin: 10px auto; }
+        }
+
+        /* --- 左側媒體展示區 --- */
+        .media-viewer {
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            min-height: 300px;
+        }
+
+        .media-content { width: 100%; height: auto; max-height: 80vh; object-fit: contain; }
+
+        .action-bar {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            backdrop-filter: var(--glass);
+            transition: 0.2s;
+        }
+
+        .action-btn:hover { border-color: var(--accent); transform: translateY(-2px); }
+
+        /* --- 右側資訊區 --- */
+        .side-info { display: flex; flex-direction: column; }
+        .meme-title { font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; }
+        .badge { display: inline-block; padding: 4px 12px; background: var(--accent); color: #000; border-radius: 6px; font-size: 0.75rem; font-weight: bold; width: fit-content; }
+        
+        .separator { border: 0; border-top: 1px solid var(--border); margin: 25px 0; }
+
+        /* --- 評論區 --- */
+        .comment-section {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: var(--glass);
+        }
+
+        .comment-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
+        
+        .comment-input-group { display: flex; flex-direction: column; gap: 12px; }
+        .comment-input {
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 12px;
+            color: white;
+            outline: none;
+        }
+        .comment-input:focus { border-color: var(--accent); }
+
+        .btn-primary {
+            background: var(--accent);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        /* --- 影片控制條 (Video UI) --- */
+.media-viewer { position: relative; cursor: pointer; }
+
+.video-ui-overlay {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
+    padding: 15px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+
+.media-viewer:hover .video-ui-overlay { opacity: 1; }
+
+.progress-wrap { width: 100%; height: 6px; cursor: pointer; display: flex; align-items: center; }
+.progress-bar-bg { width: 100%; height: 4px; background: rgba(255,255,255,0.2); border-radius: 2px; flex: 1; overflow: hidden; }
+.progress-current { 
+    width: 0%; 
+    height: 100%; 
+    background: var(--accent); 
+    box-shadow: 0 0 10px var(--accent-glow); 
+}
+
+.control-row { display: flex; align-items: center; gap: 15px; }
+.ui-btn { background: none; border: none; color: white; font-size: 1.2rem; cursor: pointer; transition: 0.2s; display: flex; align-items: center; }
+.ui-btn:hover { color: var(--accent); transform: scale(1.1); }
+.time-display { font-size: 0.8rem; font-family: monospace; flex-grow: 1; color: var(--text-dim); }    </style>
+</head>
+<body class="page-detail">
+
+    <div class="detail-container">
+        <div class="main-view">
+            <div class="media-viewer">
+                <div class="media-target"></div> 
+            
+                <div class="video-ui-overlay is-hidden">
+                    <div class="progress-wrap">
+                        <div class="progress-bar-bg"><div class="progress-current"></div></div>
+                    </div>
+                    <div class="control-row">
+                        <button class="ui-btn btn-play-toggle"><i class="ri-play-fill"></i></button>
+                        <div class="time-display">00:00 / 00:00</div>
+                        <button class="ui-btn btn-mute-toggle"><i class="ri-volume-up-line"></i></button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="action-bar">
+                <button class="action-btn btn-like">
+                    <i class="ri-heart-line"></i> 
+                    <span class="like-count">0</span>
+                </button>
+                <button class="action-btn btn-download">
+                    <i class="ri-download-cloud-2-line"></i> 
+                    <span>下載檔案</span>
+                </button>
+                <button class="action-btn btn-back">
+                    <i class="ri-arrow-go-back-line"></i> 
+                    <span>返回</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="side-info">
+            <h1 class="meme-title">載入中...</h1>
+            <span class="badge meme-category">檔案類型</span>
+            
+            <hr class="separator">
+            
+            <div class="comment-section">
+                <h3 class="section-title"><i class="ri-chat-3-line"></i> TubeMeme評論區</h3>
+                
+                <div class="comment-list">
+                    </div>
+
+                <div class="comment-input-group is-hidden">
+                    <input type="text" class="comment-input" placeholder="輸入通訊內容...">
+                    <button class="btn-primary btn-send-comment">發送</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/view-min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>TubeMeme | 迷因交流平台</title>
+    <link rel="description" href="TubeMeme 是一個迷因交流平台，讓用戶可以分享、評論和探索各種有趣的迷因內容。">
+    <link rel="icon" href="asset/logo.ico" type="image/x-icon">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="asset/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <aside class="side-panel">
+        <div class="panel-header">
+            <div class="logo">
+                <a href="index.html"><img src="asset/logo.png" alt="MemeControl Logo"></a>
+            </div>
+        </div>
+        
+        <nav class="side-nav">
+            <button class="nav-item active" onclick="switchTab('home')">
+                <i class="ri-dashboard-3-line"></i> <span>首頁</span>
+            </button>
+            <button class="nav-item" id="btn-open-upload">
+                <i class="ri-add-box-line"></i> <span>執行投稿</span>
+            </button>
+            <button class="nav-item desktop-only" onclick="switchTab('settings')">
+                <i class="ri-settings-5-line"></i> <span>系統設定</span>
+            </button>
+        </nav>
+
+        <div class="user-status-card desktop-user-panel" id="user-info-panel-desktop">
+            <div class="user-info-detail">
+                <div class="guest-login-hint">系統載入中...</div>
+            </div>
+        </div>
+    </aside>
+
+    <nav class="mobile-nav">
+        <a href="javascript:void(0)" class="nav-item active" onclick="switchTab('home')">
+            <i class="ri-home-5-line"></i><span>首頁</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchTab('upload')">
+            <i class="ri-add-circle-line"></i><span>投稿</span>
+        </a>
+        <a href="javascript:void(0)" class="nav-item" onclick="switchTab('profile')">
+            <i class="ri-user-received-line"></i><span>個人</span>
+        </a>
+    </nav>
+
+    <main class="main-content">
+        
+        <div class="user-status-card mobile-user-panel" id="user-info-panel-mobile">
+            <div class="user-info-detail">
+                <div class="guest-login-hint">系統接入中...</div>
+            </div>
+        </div>
+
+        <header class="content-header">
+            <div class="search-bar">
+                <i class="ri-search-2-line"></i>
+                <input type="text" class="main-search-input" placeholder="搜尋感興趣的迷因...">
+            </div>
+        </header>
+
+        <div class="filter-bar">
+            <button class="filter-btn active" data-cat="all">全部</button>
+            <button class="filter-btn" data-cat="經典">經典</button>
+            <button class="filter-btn" data-cat="垃圾">垃圾</button>
+            <button class="filter-btn" data-cat="搞笑">搞笑</button>
+            <button class="filter-btn" data-cat="遊戲">遊戲</button>
+        </div>
+
+        <section class="meme-grid grid-layout" id="meme-container"></section>
+
+        <div id="status-message" class="status-msg is-hidden">
+            <i class="ri-loader-5-line ri-spin"></i> 正在接入資料流...
+        </div>
+    </main>
+
+    <div class="modal-overlay" id="upload-modal">
+        <div class="upload-modal-card">
+            <button class="btn-close-modal">×</button>
+            <h2><i class="ri-file-upload-line"></i> 建立新檔案</h2>
+            <div class="modal-body">
+                <div class="file-input-wrapper">
+                    <i class="ri-video-chat-line"></i>
+                    <span>點擊或拖放影片<br><small>僅支援 MP4</small></span>
+                    <input type="file" class="input-file-video" accept="video/mp4">
+                </div>
+                <div class="input-group">
+                    <input type="text" class="input-yt-title" placeholder="輸入迷因標題...">
+                    <select class="select-yt-category">
+                        <option value="" disabled selected>選擇分類</option>
+                        <option value="經典">經典</option>
+                        <option value="垃圾">垃圾</option>
+                        <option value="搞笑">搞笑</option>
+                        <option value="遊戲">遊戲</option>
+                        <option value="動漫">動漫</option>
+                    </select>
+                </div>
+                <button class="btn-primary btn-submit-meme">啟動傳輸</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="system-notifier" class="notifier-overlay is-hidden">
+        <div class="notifier-box">
+            <div class="notifier-header">
+                <div class="header-left"><i class="ri-shield-flash-line"></i><span>系統訊息</span></div>
+                <i class="ri-close-line close-icon" onclick="closeNotifier()"></i>
+            </div>
+            <div id="notifier-content" class="notifier-message"></div>
+            <div class="notifier-loader"></div>
+        </div>
+    </div>
+
+    <script src="js/script-min.js"></script>
+</body>
+</html>
